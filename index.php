@@ -1,86 +1,112 @@
-<!DOCTYPE html>
-<html lang="ru">
+<?php
+/**
+ * Аппаратно-программные средства WEB. Задание 3.
+ * Реализовать скрипт на веб-сервере на PHP или другом языке,
+ * сохраняющий в базу данных.
+ */
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Задание 3</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <link rel="stylesheet" href="css/style.css">
-    <script defer src="https://code.jquery.com/jquery-3.4.1.min.js"
-        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
-    <script defer src="js/main.js"></script>
-</head>
+// Отправляем браузеру правильную кодировку,
+// файл index.php должен быть в кодировке UTF-8 без BOM.
+header('Content-Type: text/html; charset=utf-8');
 
-<body>
-    <form id="form" action="php/send.php" method="POST">
-        <!-- Текстовое поле для имени -->
-        <div class="form-group">
-            <label for="name-input">Имя</label>
-            <input id="name-input" name="name" class="form-control" type="text" placeholder="Ваше имя">
-        </div>
-        <!-- Текстовое поле для почты -->
-        <div class="form-group">
-            <label for="form-email">Email</label>
-            <input id="form-email" name="email" class="form-control" type="email" placeholder="Ваш email">
-        </div>
-        <!-- Выбор из списка для года рождения -->
-        <div class="form-group">
-            <label for="age-select" class="label">Год рождения</label>
-            <select name="age" id="age-select" class="custom-select"></select>
-        </div>
-        <!-- Радиокнопки для пола -->
-        <div class="form-group">
-            <label class="label">Пол</label><br>
-            <label class="radio">
-                <input type="radio" name="sex" value="male" checked>
-                Мужской
-            </label>
-            <label class="radio">
-                <input type="radio" name="sex" value="female">
-                Женский
-            </label>
-        </div>
-        <!-- Радиокнопки для количества конечностей -->
-        <div class="form-group">
-            <label>Количество конечностей</label><br>
-            <label class="radio">
-                <input type="radio" name="limbs" checked value="4">
-                4
-            </label>
-            <label class="radio">
-                <input type="radio" name="limbs" value="6">
-                6
-            </label>
-            <label class="radio">
-                <input type="radio" name="limbs" value="8">
-                8
-            </label>
-        </div>
-        <!-- Множественный выбор сверхспособностей -->
-        <div class="form-group">
-            <label for="form-select">Сверхспособности</label>
-            <select id="form-select" class="form-control" multiple size="3" name="powers[]">
-                <option value="immortality" selected>Бессмертие</option>
-                <option value="levitation">Левитация</option>
-                <option value="walls-walking">Хождение сквозь стены</option>
-            </select>
-        </div>
-        <!-- Текстовое поле для биографии -->
-        <div class="form-group">
-            <label for="form-text" class="label">Биография</label>
-            <textarea id="form-text" name="bio" class="form-control"
-                    placeholder="Напишите здесь немного о себе..."></textarea>
-        </div>
-        <!-- Чекбокс -->
-        <div class="custom-control custom-checkbox">
-          <input type="checkbox" name="check" class="custom-control-input" id="checkbox-input" checked>
-          <label class="custom-control-label" for="checkbox-input">С <a href="#" class="has-text-primary">контрактом</a> ознакомлен(а).</label>
-        </div>
-        <!-- Кнопка отправить -->
-        <button id="btn" type="submit" class="mt-2 btn btn-primary">Отправить</button>
-    </form>
-</body>
+// В суперглобальном массиве $_SERVER PHP сохраняет некторые заголовки запроса HTTP
+// и другие сведения о клиненте и сервере, например метод текущего запроса $_SERVER['REQUEST_METHOD'].
+if ($_SERVER['REQUEST_METHOD'] == 'GET')
+{
+    // В суперглобальном массиве $_GET PHP хранит все параметры, переданные в текущем запросе через URL.
+    if (!empty($_GET['save']))
+    {
+        // Если есть параметр save, то выводим сообщение пользователю.
+        print ('<div class="save has-text-info">Спасибо, данные отправлены в базу данных.</div>');
+    }
+    // Включаем содержимое файла form.php.
+    include ('form.php');
+    // Завершаем работу скрипта.
+    exit();
+}
 
-</html>
+// Иначе, если запрос был методом POST, т.е. нужно проверить данные и сохранить их БД.
+// Проверяем ошибки.
+
+// Логическая переменная наличия ошибок, изначально false
+$errors = false;
+
+// Проверка ошибок имени
+if (empty($_POST['name']))
+{
+    print ('Введите свое имя.<br/>');
+    $errors = true;
+}
+
+// Проверка ошибок почты
+if (empty($_POST['email']))
+{
+    print ('Введите свой email.<br>');
+    $errors = true;
+}
+
+// Проверка ошибок сверхспособностей
+if (empty($_POST['powers']))
+{
+    print ('Выберите хотя бы одну сверхспособность.<br>');
+    $errors = true;
+
+}
+else {
+  $powers = serialize($_POST['powers']);
+}
+
+// Проверка ошибок биографии
+if (empty($_POST['bio']))
+{
+    print ('Введите что-нибудь о себе.<br>');
+    $errors = true;
+}
+
+// Проверка ошибок галочки
+if (empty($_POST['check']))
+{
+    print ('Вы не можете отправить форму не согласившись с контрактом.<br>');
+    $errors = true;
+}
+
+// При наличии ошибок завершаем работу скрипта.
+if ($errors)
+{
+    exit();
+}
+
+// Сохранение в базу данных.
+$user = 'u16671'; // Логин от БД
+$pass = '3137204'; // Пароль от БД
+
+// Создаем класс подключения к БД
+$db = new PDO('mysql:host=localhost;dbname=u16671', $user, $pass, array(
+    PDO::ATTR_PERSISTENT => true
+));
+
+// Подготовленный запрос. Не именованные метки.
+try
+{
+    $stmt = $db->prepare("INSERT INTO app SET name = ?, email = ?, age = ?, sex = ?, limbs = ?, powers = ?, bio = ?");
+    $stmt->execute(array(
+        $_POST['name'],
+        $_POST['email'],
+        $_POST['year'],
+        $_POST['sex'],
+        $_POST['limbs'],
+        $powers,
+        $_POST['bio'],
+    ));
+}
+catch(PDOException $e)
+{
+    // При возникновении ошибки отправления в БД, выводим информацию
+    print ('Ошибка: ' . $e->getMessage());
+    exit();
+}
+
+// Делаем перенаправление.
+// Если запись не сохраняется, но ошибок не видно, то можно закомментировать эту строку чтобы увидеть ошибку.
+// Если ошибок при этом не видно, то необходимо настроить параметр display_errors для PHP.
+header('Location: ?save=1');

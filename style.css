@@ -1,0 +1,36 @@
+html {
+    background-color: #f5f5f5;
+}
+
+#form {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 4px;;
+    max-width: 425px;
+    height: 100%;
+}
+
+.save {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 4px;;
+  max-width: 425px;
+}
+
+#btn {
+    cursor: pointer;
+}
+
+#btn::after {
+    border-color: transparent transparent #00d1b2 #00d1b2!important;
+}
+
+@media screen and (min-width: 426px) {
+    #form {
+        height: auto;
+        margin: 2em auto 0;
+    }
+    .save {
+      margin: 2em auto;
+    }
+}
